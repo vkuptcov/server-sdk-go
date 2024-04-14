@@ -468,6 +468,10 @@ func (s *LocalTrack) WriteSample(sample media.Sample, opts *SampleWriteOptions) 
 	return nil
 }
 
+func (s *LocalTrack) SSRC() webrtc.SSRC {
+	return s.ssrc
+}
+
 func (s *LocalTrack) Close() error {
 	s.lock.Lock()
 	cancelWrite := s.cancelWrite

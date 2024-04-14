@@ -40,6 +40,7 @@ type ReaderSampleProvider struct {
 	// Configuration
 	Mime            string
 	FrameDuration   time.Duration
+	OnWriteStart    func(track *LocalTrack)
 	OnWriteComplete func()
 	AudioLevel      uint8
 	trackOpts       []LocalTrackOptions
@@ -77,6 +78,12 @@ func ReaderTrackWithFrameDuration(duration time.Duration) func(provider *ReaderS
 func ReaderTrackWithOnWriteComplete(f func()) func(provider *ReaderSampleProvider) {
 	return func(provider *ReaderSampleProvider) {
 		provider.OnWriteComplete = f
+	}
+}
+
+func ReaderTrackWithOnWriteStart(f func(track *LocalTrack)) func(provider *ReaderSampleProvider) {
+	return func(provider *ReaderSampleProvider) {
+		provider.OnWriteStart = f
 	}
 }
 
@@ -169,6 +176,7 @@ func NewLocalReaderTrack(in io.ReadCloser, mime string, options ...ReaderSampleP
 		return nil, err
 	}
 	track.OnBind(func() {
+		provider.OnWriteStart(track)
 		if err := track.StartWrite(provider, provider.OnWriteComplete); err != nil {
 			logger.Errorw("Could not start writing", err)
 		}
